@@ -6,7 +6,7 @@ const axiosRetry = require("axios-retry");
 const needle = require('needle');
 
 const router = express.Router();
-const bearerToken = 'Bearer AAAAAAAAAAAAAAAAAAAAAKlAOQEAAAAARS7DnwRTsyaDm0STmkaxYgI90RU%3DTyZTpAo3mYOGvp9rSCgT9eISvsdEYuVM8pggVfL2iuzP4Xohw3'
+const bearerToken = 'Bearer AAAAAAAAAAAAAAAAAAAAAKlAOQEAAAAARS7DnwRTsyaDm0STmkaxYgI90RU%3DTyZTpAo3mYOGvp9rSCgT9eISvsdEYuVM8pggVfL2iuzP4Xohw3123'
 
 axiosRetry(axios, {
   retries: 3,
@@ -31,8 +31,8 @@ async function streamTweets() {
   }
 
   const stream = needle.get(streamURL, {
-    username: 'prasannas@twitter.com',
-    password: 'bond0505'
+    username: '123@abc.com',
+    password: 'dogfight!'
   }, options);
 
   stream.on('data', data => {
