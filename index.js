@@ -4,7 +4,7 @@ const cors = require('cors')
 const stream = require('./controllers/stream')
 
 const app = express();
-const port = 4020;
+const PORT = process.env.PORT || 4020;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -15,5 +15,7 @@ app.post('*', cors())
 app.use('/stream',stream);
 
 app.listen(port, ()=>   {
-    console.log("App listening on port",port)
-})
+    console.log("App listening on port",PORT);
+});
+
+module.exports = app;
