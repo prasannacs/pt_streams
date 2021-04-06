@@ -14,7 +14,7 @@ app.options('*', cors())
 app.post('*', cors()) 
 app.use('/stream',stream);
 
-app.listen(port, ()=>   {
+app.listen(PORT, ()=>   {
     console.log("App listening on port",PORT);
 });
 
