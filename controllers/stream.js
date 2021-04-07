@@ -4,9 +4,10 @@ const { pipeline } = require('stream');
 const axios = require("axios").default;
 const axiosRetry = require("axios-retry");
 const needle = require('needle');
+const pub_sub_svcs = require('.././services/pub-sub.js');
+const config = require('../config.js');
 
 const router = express.Router();
-const bearerToken = 'Bearer AAAAAAAAAAAAAAAAAAAAAKlAOQEAAAAARS7DnwRTsyaDm0STmkaxYgI90RU%3DTyZTpAo3mYOGvp9rSCgT9eISvsdEYuVM8pggVfL2iuzP4Xohw3123'
 
 axiosRetry(axios, {
   retries: 3,
@@ -23,24 +24,22 @@ router.get("/", function (req, res) {
 });
 
 async function streamTweets() {
-  const streamURL = "https://gnip-stream.twitter.com/stream/powertrack/accounts/Prasanna-Selvaraj/publishers/twitter/dev.json";
-
   //Listen to the stream
   const options = {
     timeout: 20000
   }
 
-  const stream = needle.get(streamURL, {
-    username: '123@abc.com',
-    password: 'dogfight!'
+  const stream = needle.get(config.pt_stream_url, {
+    username: config.gnip_username,
+    password: config.gnip_password
   }, options);
 
   stream.on('data', data => {
     const chunks = [];
     try {
-      //console.log('data -- ',data);
       chunks.push(Buffer.from(data));
-      console.log('-- STREAM --',Buffer.concat(chunks).toString('utf8'));
+      //console.log('-- STREAM --',Buffer.concat(chunks).toString('utf8'));
+      pub_sub_svcs.publishMessage(Buffer.concat(chunks).toString('utf8'));
     } catch (e) {
       console.log('Error in streaming ',e);
       // Keep alive signal received. Do nothing.
@@ -50,24 +49,10 @@ async function streamTweets() {
       stream.emit('timeout');
     }
   }).on('end', () =>  {
+    console.log('---POWERTRACK STREAM ENDED ---- NOT GOOD -----');
     // do nothing and keep the connection alive
-  })
-  ;
-  // const result = await streamToString(stream)
-  // console.log('result -- ', result);
+  });
   return stream;
-
 }
-
-function streamToString(stream) {
-  console.log('streamToString ');
-  const chunks = [];
-  return new Promise((resolve, reject) => {
-    stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-    stream.on('error', (err) => reject(err));
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-  })
-}
-
 
 module.exports = router;
