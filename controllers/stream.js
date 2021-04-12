@@ -24,6 +24,11 @@ router.get("/", function (req, res) {
   res.send("Now streaming tweets ..");
 });
 
+router.get("/alive", function (req, res) {
+  console.log('staying alive ..');
+  res.send('Alive');
+});
+
 async function streamTweets() {
   //Listen to the stream
   const options = {
