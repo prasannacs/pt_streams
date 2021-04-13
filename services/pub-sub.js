@@ -3,9 +3,8 @@ const {v1} = require('@google-cloud/pubsub');
 const { insertResults } = require('./bq');
 
 const pubSubClient = new PubSub();
-const topicName = "twitter-stream";
 
-async function publishMessage(message) {
+async function publishMessage(topicName, message) {
   // Publishes the message as a string, e.g. "Hello, world!" or JSON.stringify(someObject)
   const dataBuffer = Buffer.from(message);
 
@@ -18,11 +17,9 @@ async function publishMessage(message) {
   }
 }
 
-const subscriptionName = 'twitter-stream-sub';
-const projectId = 'twttr-des-sa-demo-dev';
 const timeout = 60;
 
-async function listenForMessages() {
+async function listenForMessages(subscriptionName) {
   // References an existing subscription
   const subscription = pubSubClient.subscription(subscriptionName);
 
@@ -50,7 +47,7 @@ async function listenForMessages() {
 // Creates a client; cache this for further use.
 const subClient = new v1.SubscriberClient();
 
-async function synchronousPull() {
+async function synchronousPull(projectId, subscriptionName, maxMessagesToPull) {
   const formattedSubscription = subClient.subscriptionPath(
     projectId,
     subscriptionName
@@ -60,7 +57,7 @@ async function synchronousPull() {
   // Pub/Sub may return fewer than the number specified.
   const request = {
     subscription: formattedSubscription,
-    maxMessages: 250,
+    maxMessages: maxMessagesToPull,
   };
 
   // The subscriber pulls a specified number of messages.

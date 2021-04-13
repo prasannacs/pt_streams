@@ -55,11 +55,11 @@ async function streamTweets() {
       if (json_payload) {
         try {
           JSON.parse(json_payload);
-          pub_sub_svcs.publishMessage(JSON.stringify(json_payload));
+          pub_sub_svcs.publishMessage(config.gcp_topicName, JSON.stringify(json_payload));
           msg_counter++;
-          if (msg_counter > 250) {
+          if (msg_counter > config.messageCount) {
             msg_counter = 0;
-            pub_sub_svcs.synchronousPull();
+            pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
           }
         } catch (e) {
           if (json_payload[0] == undefined || json_payload[0] == '\r' || json_payload[0] == '' || json_payload[0] == '\n') {
@@ -79,6 +79,9 @@ async function streamTweets() {
     }
   }).on('done', function (err, response) {
     console.log('Stream done ', response);
+  }).on('close', function() {
+    console.log('Client disconnect ', response);
+    streamTweets();
   });
   return stream;
 }
