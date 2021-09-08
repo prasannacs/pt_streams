@@ -1,8 +1,8 @@
 const { BigQuery } = require("@google-cloud/bigquery");
 
 const projectId = "twttr-des-sa-demo-dev";
-const datasetId = "twitter";
-const table = "gaming_trends";
+const datasetId = "trends";
+const table = "gaming";
 
 
 async function insertRowsAsStream(tableId, rows) {
