@@ -10,7 +10,7 @@ async function publishMessage(topicName, message) {
 
   try {
     const messageId = await pubSubClient.topic(topicName).publish(dataBuffer);
-    console.log(`Message ${messageId} published.`);
+    //console.log(`Message ${messageId} published.`);
   } catch (error) {
     console.error(`Received error while publishing: ${error.message}`);
     process.exitCode = 1;
@@ -75,7 +75,7 @@ async function synchronousPull(projectId, subscriptionName, maxMessagesToPull) {
 
   console.log('Tweets pulled -- ',tweets.length);
   // Insert into BQ
-  await insertResults(tweets,'cash');
+  await insertResults(tweets,'games');
 
   if (ackIds.length !== 0) {
     // Acknowledge all of the messages. You could also ackknowledge
@@ -87,8 +87,6 @@ async function synchronousPull(projectId, subscriptionName, maxMessagesToPull) {
 
     await subClient.acknowledge(ackRequest);
   }
-
-  console.log('Done.');
 }
 
 module.exports = { publishMessage, listenForMessages, synchronousPull };

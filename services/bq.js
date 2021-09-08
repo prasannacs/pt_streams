@@ -2,7 +2,7 @@ const { BigQuery } = require("@google-cloud/bigquery");
 
 const projectId = "twttr-des-sa-demo-dev";
 const datasetId = "twitter";
-const table = "pt_cashtags_trends";
+const table = "gaming_trends";
 
 
 async function insertRowsAsStream(tableId, rows) {
@@ -64,7 +64,7 @@ async function insertResults(results, category) {
 
       if(tweet.created_at != undefined) {
       var cDate = new Date(tweet.created_at);
-      console.log('====== pushed tweet id ',tweet.id, 'created_at ',cDate, ' tweet.created_at -- ',tweet.created_at);
+      //console.log('====== pushed tweet id ',tweet.id, 'created_at ',cDate, ' tweet.created_at -- ',tweet.created_at);
       resultRows.push({
         id: tweet.id,
         text: tweet.text,
@@ -81,12 +81,11 @@ async function insertResults(results, category) {
         possibly_sensitive: tweet.possibly_sensitive,
         geo: geoVar,
         entities: entitiesVar,
+        user : tweet.user
       });
     }
     }
   });
-
-  console.log('Result row ---------------- length ----',resultRows.length);
   if( resultRows.length > 0 )
     insertRowsAsStream(table, resultRows);
 }
