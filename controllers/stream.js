@@ -37,7 +37,7 @@ router.get("/poll", function (req, res) {
 async function streamTweets() {
   //Listen to the stream
   const options = {
-    timeout: 20000,
+    timeout: 2,
     compressed: true,
     connection: 'Keep-Alive',
     content_type: 'application/json'
@@ -47,7 +47,6 @@ async function streamTweets() {
     username: config.gnip_username,
     password: config.gnip_password
   }, options);
-  var msg_counter = 0;
 
   stream.on('readable', function () {
     var node;
@@ -61,7 +60,7 @@ async function streamTweets() {
         try {
           JSON.parse(json_payload);
           pub_sub_svcs.publishMessage(config.gcp_topicName, JSON.stringify(json_payload));
-          msg_counter++;
+          // msg_counter++;
           // if (msg_counter > config.messageCount) {
           //   msg_counter = 0;
           //   pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
@@ -81,16 +80,18 @@ async function streamTweets() {
           }
         }
       }
+      const used = process.memoryUsage().heapUsed / 1024 / 1024;
+      console.log(used,`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     }
   }).on('done', function (err, response) {
     console.log('Stream done ', response);
-  }).on('close', function() {
+  }).on('close', function () {
     console.log('Client disconnect ', response);
     streamTweets();
-  }).on('err', function (error, response){
+  }).on('err', function (error, response) {
     console.log('Stream connection error ', response);
     streamTweets();
-  }).on('timeout', function (error, response){
+  }).on('timeout', function (error, response) {
     console.log('Stream timeout error ', response);
     streamTweets();
   });
