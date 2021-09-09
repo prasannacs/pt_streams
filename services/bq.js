@@ -1,19 +1,15 @@
 const { BigQuery } = require("@google-cloud/bigquery");
+const config = require('../config.js');
 
-const projectId = "twttr-des-sa-demo-dev";
-const datasetId = "trends";
-const table = "gaming";
-
-
-async function insertRowsAsStream(tableId, rows) {
+async function insertRowsAsStream(rows) {
   const bigqueryClient = new BigQuery();
 
   // Insert data into a table
   try {
     const result = await new Promise((resolve, reject) => {
       bigqueryClient
-        .dataset(datasetId)
-        .table(tableId)
+        .dataset(config.pt_datasetId)
+        .table(config.pt_table)
         .insert(rows)
         .then((results) => {
           console.log(`Inserted ${rows.length} rows`);
@@ -87,7 +83,7 @@ async function insertResults(results, category) {
     }
   });
   if( resultRows.length > 0 )
-    insertRowsAsStream(table, resultRows);
+    insertRowsAsStream(resultRows);
 }
 
 module.exports = { insertResults };

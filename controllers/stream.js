@@ -25,7 +25,7 @@ router.get("/", function (req, res) {
 });
 
 router.get("/alive", function (req, res) {
-  console.log('staying alive ..');
+  //console.log('staying alive ..');
   res.send('Alive');
 });
 
@@ -81,6 +81,12 @@ async function streamTweets() {
     console.log('Stream done ', response);
   }).on('close', function() {
     console.log('Client disconnect ', response);
+    streamTweets();
+  }).on('err', function (error, response){
+    console.log('Stream connection error ', response);
+    streamTweets();
+  }).on('timeout', function (error, response){
+    console.log('Stream timeout error ', response);
     streamTweets();
   });
   return stream;
