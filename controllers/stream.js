@@ -20,13 +20,18 @@ axiosRetry(axios, {
 
 router.get("/", function (req, res) {
   streamTweets();
-  //pub_sub_svcs.synchronousPull();
   res.send("Now streaming tweets ..");
 });
 
 router.get("/alive", function (req, res) {
   //console.log('staying alive ..');
   res.send('Alive');
+});
+
+router.get("/poll", function (req, res) {
+  console.log('polling Tweets from PubSub');
+  pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
+  res.send('polling Tweets from PubSub');
 });
 
 async function streamTweets() {
@@ -57,10 +62,10 @@ async function streamTweets() {
           JSON.parse(json_payload);
           pub_sub_svcs.publishMessage(config.gcp_topicName, JSON.stringify(json_payload));
           msg_counter++;
-          if (msg_counter > config.messageCount) {
-            msg_counter = 0;
-            pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
-          }
+          // if (msg_counter > config.messageCount) {
+          //   msg_counter = 0;
+          //   pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
+          // }
         } catch (e) {
           if (json_payload[0] == undefined || json_payload[0] == '\r' || json_payload[0] == '' || json_payload[0] == '\n') {
             console.log('~~~ Heartbeat payload ~~~ ');
