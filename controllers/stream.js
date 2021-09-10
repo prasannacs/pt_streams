@@ -80,8 +80,8 @@ async function streamTweets() {
           }
         }
       }
-      const used = process.memoryUsage().heapUsed / 1024 / 1024;
-      console.log(used,`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+      // const used = process.memoryUsage().heapUsed / 1024 / 1024;
+      // console.log(used,`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     }
   }).on('done', function (err, response) {
     console.log('Stream done ', response);
