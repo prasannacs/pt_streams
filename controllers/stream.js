@@ -112,7 +112,7 @@ async function streamTweetsHttp() {
     }
   };
   request = https.get(options, function (res) {
-    console.log('streaming with HTTP .. ');
+    console.log('streaming with HTTP .. ',config.app_name);
     var body = '';
     var msg_counter = 0;
     res.on('data', function (data) {

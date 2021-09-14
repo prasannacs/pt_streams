@@ -1,6 +1,7 @@
 const {PubSub} = require('@google-cloud/pubsub');
 const {v1} = require('@google-cloud/pubsub');
 const { insertResults } = require('./bq');
+const config = require('../config.js');
 
 const pubSubClient = new PubSub();
 
@@ -73,9 +74,9 @@ async function synchronousPull(projectId, subscriptionName, maxMessagesToPull) {
     ackIds.push(message.ackId);
   }
 
-  console.log('Tweets pulled -- ',tweets.length);
+  console.log(config.app_name,' Tweets pulled -- ',tweets.length);
   // Insert into BQ
-  await insertResults(tweets,'games');
+  await insertResults(tweets,config.app_name);
 
   if (ackIds.length !== 0) {
     // Acknowledge all of the messages. You could also ackknowledge

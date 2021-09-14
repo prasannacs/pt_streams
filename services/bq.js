@@ -12,7 +12,7 @@ async function insertRowsAsStream(rows) {
         .table(config.pt_table)
         .insert(rows)
         .then((results) => {
-          console.log(`Inserted ${rows.length} rows`);
+          console.log(config.app_name,` Inserted ${rows.length} rows`);
           resolve(rows);
         })
         .catch((err) => {
