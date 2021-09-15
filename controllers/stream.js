@@ -5,6 +5,8 @@ const axios = require("axios").default;
 const axiosRetry = require("axios-retry");
 const needle = require('needle');
 const pub_sub_svcs = require('.././services/pub-sub.js');
+const utils = require('.././services/utils.js');
+
 const config = require('../config.js');
 const https = require('https');
 
@@ -29,9 +31,11 @@ router.get("/alive", function (req, res) {
   res.send('Alive');
 });
 
-router.get("/poll", function (req, res) {
-  console.log('polling Tweets from PubSub');
-  pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
+router.get("/poll/:frequency/:delay", function (req, res) {
+  console.log('polling Tweets from PubSub ',req.params.frequency);
+  for(var i=0; i<req.params.frequency; i++) {
+    setTimeout(() => {pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount)},req.params.delay);
+  }
   res.send('polling Tweets from PubSub');
 });
 
@@ -48,9 +52,8 @@ async function streamTweetsHttp() {
   request = https.get(options, function (res) {
     console.log('streaming with HTTP .. ',config.app_name);
     var body = '';
-    var msg_counter = 0;
+    // var msg_counter = 0;
     res.on('data', function (data) {
-
       // our stream will only emit a single JSON root node.
       var splited_payload = '';
       //console.log('got data: ', data.toString(),'---------\n');
@@ -59,11 +62,11 @@ async function streamTweetsHttp() {
         try {
           JSON.parse(json_payload);
           pub_sub_svcs.publishMessage(config.gcp_topicName, JSON.stringify(json_payload));
-          msg_counter++;
-          if (msg_counter > config.messageCount) {
-            msg_counter = 0;
-            pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
-          }
+          // msg_counter++;
+          // if (msg_counter > config.messageCount) {
+          //   msg_counter = 0;
+          //   pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
+          // }
         } catch (e) {
           if (json_payload[0] == undefined || json_payload[0] == '\r' || json_payload[0] == '' || json_payload[0] == '\n') {
             console.log('~~~ Heartbeat payload ~~~ ');
@@ -84,10 +87,11 @@ async function streamTweetsHttp() {
     });
     res.on('end', function () {
       //here we have the full response, html or json object
-      //console.log(body);
+      console.log(body);
     })
     res.on('error', function (e) {
-      onsole.log("Got error: " + e.message);
+      console.log("Got error: " + e.message);
+      streamTweetsHttp();
     });
   });
 
