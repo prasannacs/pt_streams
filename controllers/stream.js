@@ -22,7 +22,7 @@ axiosRetry(axios, {
 });
 
 router.get("/", function (req, res) {
-  streamTweets();
+  streamTweetsHttp();
   res.send("Now streaming tweets ..");
 });
 
