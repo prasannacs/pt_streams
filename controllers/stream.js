@@ -34,7 +34,14 @@ router.get("/alive", function (req, res) {
 router.get("/poll/:frequency/:delay", function (req, res) {
   console.log('polling Tweets from PubSub ',req.params.frequency);
   for(var i=0; i<req.params.frequency; i++) {
-    setTimeout(() => {pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount)},req.params.delay);
+    setTimeout(() => {
+      pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount).then( (messenger) => {
+        console.log('Stream reconnect => ',messenger);
+        if( messenger === 'disconnect')
+          streamTweetsHttp();  
+      })
+
+      },req.params.delay);
   }
   res.send('polling Tweets from PubSub');
 });
@@ -45,6 +52,7 @@ async function streamTweetsHttp() {
     host: config.pt_stream_host,
     port: 443,
     path: config.pt_stream_path,
+    keepAlive: true,
     headers: {
       'Authorization': 'Basic ' + new Buffer(config.gnip_username + ':' + config.gnip_password).toString('base64')
     }
@@ -68,7 +76,8 @@ async function streamTweetsHttp() {
           //   pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
           // }
         } catch (e) {
-          if (json_payload[0] == undefined || json_payload[0] == '\r' || json_payload[0] == '' || json_payload[0] == '\n') {
+          console.log('Error -- ',e.message);
+          if (json_payload[0] === undefined || json_payload[0] === '\r' || json_payload[0] === '' || json_payload[0] === '\n') {
             console.log('~~~ Heartbeat payload ~~~ ');
           } else {
             if (splited_payload.length > 0) {
@@ -82,8 +91,6 @@ async function streamTweetsHttp() {
           }
         }
       }
-      // const used = process.memoryUsage().heapUsed / 1024 / 1024;
-      // console.log(used,`The script uses approximately ${Math.round(used * 100) / 100} MB`);
     });
     res.on('end', function () {
       //here we have the full response, html or json object

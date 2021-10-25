@@ -4,6 +4,7 @@ const { insertResults } = require('./bq');
 const config = require('../config.js');
 
 const pubSubClient = new PubSub();
+var counter = 0;
 
 async function publishMessage(topicName, message) {
   // Publishes the message as a string, e.g. "Hello, world!" or JSON.stringify(someObject)
@@ -75,6 +76,15 @@ async function synchronousPull(projectId, subscriptionName, maxMessagesToPull) {
   }
 
   console.log(config.app_name,' Tweets pulled -- ',tweets.length);
+  if( tweets.length == 0 )
+    counter++;
+    console.log('counter ',counter);
+  if( counter > 10 )  {
+    counter = 0;
+    return new Promise(function (resolve, reject) {
+      resolve('disconnect')
+    });
+  }
   // Insert into BQ
   await insertResults(tweets,config.app_name);
 

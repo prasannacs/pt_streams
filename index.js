@@ -16,7 +16,7 @@ app.use('/stream',stream);
 
 app.listen(PORT, ()=>   {
     console.log("App listening on port",PORT);
-    stream.streamTweetsHttp();
+    //stream.streamTweetsHttp();
 });
 
 module.exports = app;
