@@ -76,7 +76,7 @@ async function streamTweetsHttp() {
           //   pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
           // }
         } catch (e) {
-          console.log('Error -- ',e.message);
+          //console.log('Error -- ',e.message);
           if (json_payload[0] === undefined || json_payload[0] === '\r' || json_payload[0] === '' || json_payload[0] === '\n') {
             console.log('~~~ Heartbeat payload ~~~ ');
           } else {
