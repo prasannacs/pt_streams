@@ -36,9 +36,11 @@ router.get("/poll/:frequency/:delay", function (req, res) {
   for(var i=0; i<req.params.frequency; i++) {
     setTimeout(() => {
       pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount).then( (messenger) => {
-        console.log('Stream reconnect => ',messenger);
-        if( messenger === 'disconnect')
+        
+        if( messenger === 'disconnect') {
+          console.log('Stream reconnecting => ',messenger);
           streamTweetsHttp();  
+        }
       })
 
       },req.params.delay);
