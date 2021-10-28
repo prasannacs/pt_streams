@@ -78,8 +78,7 @@ async function synchronousPull(projectId, subscriptionName, maxMessagesToPull) {
   console.log(config.app_name,' Tweets pulled -- ',tweets.length);
   if( tweets.length == 0 )
     counter++;
-    //console.log('counter ',counter);
-  if( counter > 10 )  {
+  if( counter > config.reconnectCounter )  {
     counter = 0;
     return new Promise(function (resolve, reject) {
       resolve('disconnect')

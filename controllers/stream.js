@@ -3,7 +3,6 @@ const fs = require('fs');
 const { pipeline } = require('stream');
 const axios = require("axios").default;
 const axiosRetry = require("axios-retry");
-const needle = require('needle');
 const pub_sub_svcs = require('.././services/pub-sub.js');
 const utils = require('.././services/utils.js');
 
@@ -32,18 +31,18 @@ router.get("/alive", function (req, res) {
 });
 
 router.get("/poll/:frequency/:delay", function (req, res) {
-  console.log('polling Tweets from PubSub ',req.params.frequency);
-  for(var i=0; i<req.params.frequency; i++) {
+  console.log('polling Tweets from PubSub ', req.params.frequency);
+  for (var i = 0; i < req.params.frequency; i++) {
     setTimeout(() => {
-      pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount).then( (messenger) => {
-        
-        if( messenger === 'disconnect') {
-          console.log('Stream reconnecting => ',messenger);
-          streamTweetsHttp();  
+      pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount).then((messenger) => {
+
+        if (messenger === 'disconnect') {
+          console.log('Stream reconnecting => ', messenger);
+          streamTweetsHttp();
         }
       })
 
-      },req.params.delay);
+    }, req.params.delay);
   }
   res.send('polling Tweets from PubSub');
 });
@@ -60,9 +59,8 @@ async function streamTweetsHttp() {
     }
   };
   request = https.get(options, function (res) {
-    console.log('streaming with HTTP .. ',config.app_name);
+    console.log('streaming with HTTP .. ', config.app_name);
     var body = '';
-    // var msg_counter = 0;
     res.on('data', function (data) {
       // our stream will only emit a single JSON root node.
       var splited_payload = '';
@@ -72,11 +70,6 @@ async function streamTweetsHttp() {
         try {
           JSON.parse(json_payload);
           pub_sub_svcs.publishMessage(config.gcp_topicName, JSON.stringify(json_payload));
-          // msg_counter++;
-          // if (msg_counter > config.messageCount) {
-          //   msg_counter = 0;
-          //   pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount);
-          // }
         } catch (e) {
           //console.log('Error -- ',e.message);
           if (json_payload[0] === undefined || json_payload[0] === '\r' || json_payload[0] === '' || json_payload[0] === '\n') {
@@ -103,9 +96,7 @@ async function streamTweetsHttp() {
       streamTweetsHttp();
     });
   });
-
 }
-
 
 module.exports = router
 module.exports.streamTweetsHttp = streamTweetsHttp;
