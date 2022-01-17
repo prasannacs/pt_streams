@@ -1,1 +1,1 @@
-# pt_streams
+# Real-time trends - Architecture Blueprint #
