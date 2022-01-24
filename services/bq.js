@@ -12,7 +12,7 @@ async function insertRowsAsStream(rows) {
         .table(config.pt_table)
         .insert(rows)
         .then((results) => {
-          console.log(config.app_name,` Inserted ${rows.length} rows`);
+          console.log(config.app_name, ` Inserted ${rows.length} rows`);
           resolve(rows);
         })
         .catch((err) => {
@@ -47,7 +47,7 @@ async function insertResults(results, category) {
         if (tweet.entities.urls === undefined)
           entitiesVar.urls = [];
         else
-        entitiesVar.urls = [];
+          entitiesVar.urls = [];
         // TODO: ^^ correct it
         if (tweet.entities.user_mentions === undefined)
           entitiesVar.user_mentions = [];
@@ -58,31 +58,35 @@ async function insertResults(results, category) {
         entitiesVar.media = [];
       }
 
-      if(tweet.created_at != undefined) {
-      var cDate = new Date(tweet.created_at);
-      //console.log('====== pushed tweet id ',tweet.id, 'created_at ',cDate, ' tweet.created_at -- ',tweet.created_at);
-      resultRows.push({
-        id: tweet.id,
-        text: tweet.text,
-        category: category,
-        reply_settings: tweet.reply_settings,
-        source: tweet.source,
-        author_id: tweet.author_id,
-        conversation_id: tweet.conversation_id,
-       //created_at : tweet.created_at,
-        created_at: BigQuery.datetime(cDate.toISOString()),
-        lang: tweet.lang,
-        in_reply_to_user_id: tweet.in_reply_to_user_id,
-        in_reply_to_screen_name: tweet.in_reply_to_screen_name,
-        possibly_sensitive: tweet.possibly_sensitive,
-        geo: geoVar,
-        entities: entitiesVar,
-        user : tweet.user
-      });
-    }
+      if(tweet.user != undefined) {
+        tweet.user.user_url = 'http://twitter.com/' + tweet.user.screen_name
+      }
+
+      if (tweet.created_at != undefined) {
+        var cDate = new Date(tweet.created_at);
+        //console.log('====== pushed tweet id ',tweet.id, 'created_at ',cDate, ' tweet.created_at -- ',tweet.created_at);
+        resultRows.push({
+          id: tweet.id,
+          text: tweet.text,
+          category: category,
+          reply_settings: tweet.reply_settings,
+          source: tweet.source,
+          author_id: tweet.author_id,
+          conversation_id: tweet.conversation_id,
+          created_at: BigQuery.datetime(cDate.toISOString()),
+          lang: tweet.lang,
+          in_reply_to_user_id: tweet.in_reply_to_user_id,
+          in_reply_to_screen_name: tweet.in_reply_to_screen_name,
+          possibly_sensitive: tweet.possibly_sensitive,
+          geo: geoVar,
+          entities: entitiesVar,
+          user: tweet.user,
+          tweet_url: 'http://twitter.com/twitter/status/' + tweet.id
+        });
+      }
     }
   });
-  if( resultRows.length > 0 )
+  if (resultRows.length > 0)
     insertRowsAsStream(resultRows);
 }
 

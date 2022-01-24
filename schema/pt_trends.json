@@ -396,6 +396,11 @@
                 "mode": "NULLABLE"
             },
             {
+                "name": "user_url",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },            
+            {
                 "name": "name",
                 "type": "STRING",
                 "mode": "NULLABLE"
@@ -685,6 +690,10 @@
     },
     {
         "name": "in_reply_to_screen_name",
+        "type": "STRING"
+    },
+    {
+        "name": "tweet_url",
         "type": "STRING"
     }
 ]
