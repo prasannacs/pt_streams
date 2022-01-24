@@ -66,7 +66,7 @@ async function insertResults(results, category) {
         var cDate = new Date(tweet.created_at);
         //console.log('====== pushed tweet id ',tweet.id, 'created_at ',cDate, ' tweet.created_at -- ',tweet.created_at);
         resultRows.push({
-          id: tweet.id,
+          id: tweet.id_str,
           text: tweet.text,
           category: category,
           reply_settings: tweet.reply_settings,
@@ -81,7 +81,7 @@ async function insertResults(results, category) {
           geo: geoVar,
           entities: entitiesVar,
           user: tweet.user,
-          tweet_url: 'http://twitter.com/twitter/status/' + tweet.id
+          tweet_url: 'http://twitter.com/twitter/status/' + tweet.id_str
         });
       }
     }
