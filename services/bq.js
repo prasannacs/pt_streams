@@ -42,6 +42,23 @@ async function insertResults(results, category) {
         }
       }
 
+      let tweet_type;
+      // Determine Tweet type
+      if( tweet.in_reply_to_user_id != undefined || tweet.in_reply_to_user_id != null)  {
+        tweet_type = 'Reply';
+      } else if ( tweet.text.startsWith('RT',0) ) {
+        tweet_type = 'Retweet'
+      } else if( tweet.quoted_status )  {
+        tweet_type = 'Quote'
+      } else {
+        tweet_type = 'Original'
+      }
+
+      // Determine full text
+      if(tweet.extended_tweet)  {
+        tweet.text = tweet.extended_tweet.full_text;
+      }
+
       if (tweet.entities != undefined) {
         var entitiesVar = tweet.entities;
         if (tweet.entities.urls === undefined)
@@ -64,7 +81,7 @@ async function insertResults(results, category) {
 
       if (tweet.created_at != undefined) {
         var cDate = new Date(tweet.created_at);
-        //console.log('====== pushed tweet id ',tweet.id, 'created_at ',cDate, ' tweet.created_at -- ',tweet.created_at);
+        //console.log('====== pushed tweet id ',tweet.id, 'type ', tweet_type);
         resultRows.push({
           id: tweet.id_str,
           text: tweet.text,
@@ -81,7 +98,8 @@ async function insertResults(results, category) {
           geo: geoVar,
           entities: entitiesVar,
           user: tweet.user,
-          tweet_url: 'http://twitter.com/twitter/status/' + tweet.id_str
+          tweet_url: 'http://twitter.com/twitter/status/' + tweet.id_str,
+          tweet_type : tweet_type
         });
       }
     }

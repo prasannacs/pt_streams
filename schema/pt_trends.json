@@ -695,5 +695,9 @@
     {
         "name": "tweet_url",
         "type": "STRING"
+    },
+    {
+        "name": "tweet_type",
+        "type": "STRING"
     }
 ]
