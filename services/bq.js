@@ -42,7 +42,7 @@ async function insertResults(results, category) {
         }
       }
 
-      let tweet_type;
+      var tweet_type;
       // Determine Tweet type
       if( tweet.in_reply_to_user_id != undefined || tweet.in_reply_to_user_id != null)  {
         tweet_type = 'Reply';
