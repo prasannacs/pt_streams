@@ -699,5 +699,95 @@
     {
         "name": "tweet_type",
         "type": "STRING"
+    },
+    {
+        "name": "media",
+        "type": "RECORD",
+        "mode": "REPEATED",
+        "fields": [
+            {
+                "name": "id",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },
+            {
+                "name": "media_url",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },
+            {
+                "name": "media_url_https",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },
+            {
+                "name": "url",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },
+            {
+                "name": "display_url",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },
+            {
+                "name": "expanded_url",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },
+            {
+                "name": "type",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            }
+        ]
+    },
+    {
+        "name": "extended_entities",
+        "type": "RECORD",
+        "fields": [
+            {
+                "name": "media",
+                "type": "RECORD",
+                "mode": "REPEATED",
+                "fields": [
+                    {
+                        "name": "id",
+                        "type": "STRING",
+                        "mode": "NULLABLE"
+                    },
+                    {
+                        "name": "media_url",
+                        "type": "STRING",
+                        "mode": "NULLABLE"
+                    },
+                    {
+                        "name": "media_url_https",
+                        "type": "STRING",
+                        "mode": "NULLABLE"
+                    },
+                    {
+                        "name": "url",
+                        "type": "STRING",
+                        "mode": "NULLABLE"
+                    },
+                    {
+                        "name": "display_url",
+                        "type": "STRING",
+                        "mode": "NULLABLE"
+                    },
+                    {
+                        "name": "expanded_url",
+                        "type": "STRING",
+                        "mode": "NULLABLE"
+                    },
+                    {
+                        "name": "type",
+                        "type": "STRING",
+                        "mode": "NULLABLE"
+                    }
+                ]
+            }
+        ]
     }
 ]
