@@ -5,6 +5,7 @@ const axios = require("axios").default;
 const axiosRetry = require("axios-retry");
 const pub_sub_svcs = require('.././services/pub-sub.js');
 const utils = require('.././services/utils.js');
+const bq_svcs = require('.././services/bq.js');
 
 const config = require('../config.js');
 const https = require('https');
@@ -29,6 +30,65 @@ router.get("/alive", function (req, res) {
   //console.log('staying alive ..');
   res.send('Alive');
 });
+
+router.get("/engagement", function (req, res) {
+  bq_svcs.queryRecentTweetsforEngagement().then(function (tweets) {
+    console.log('Tweets array size ', tweets.length);
+    updateEngagementMetrics(tweets);
+    res.send("Updating engagement metrics ..");
+  })
+});
+
+async function updateEngagementMetrics(tweets) {
+  let axiosConfig = {
+    headers: { Authorization: config.twitter_bearer_token, 'Content-Type': 'application/json', 'Accept-Encoding': 'gzip' }
+  };
+  let tweet_ids = [];
+  let quotient = Math.floor(tweets.length / 250)
+  var pointer = 0;
+  let mod = tweets.length % 250
+  tweets.forEach(tweet => {
+    tweet_ids.push(tweet['id']);
+  });
+  for (var i = 0; i < quotient; i++) {
+    let batch_tweet_ids = tweet_ids.slice(pointer, pointer + 249)
+    let bodyParameters = {
+      'tweet_ids': batch_tweet_ids,
+      'engagement_types': ['video_views', 'replies', 'favorites', 'quote_tweets', 'retweets'],
+      'groupings': { 'group': { 'group_by': ['tweet.id', 'engagement.type'] } }
+    };
+    axios.post(
+      'https://data-api.twitter.com/insights/engagement/totals',
+      bodyParameters,
+      axiosConfig
+    )
+      .then(function (engageObj) {
+        //console.log('batch_tweet_ids ',batch_tweet_ids);
+        unavail_tweet_list = engageObj.data.unavailable_tweet_ids;
+        unavail_tweet_list.forEach(function (value, index) {
+          for (let j = 0; j < batch_tweet_ids.length; j++) {
+            if (value === batch_tweet_ids[j]) {
+              batch_tweet_ids.splice(j, 1);
+            }
+          }
+        })
+        var tweet_engage_list= [];
+        for (let k = 0; k < batch_tweet_ids.length; k++) {
+          //console.log('Engage ', k, ' Tweet ',batch_tweet_ids[k], ' engage ', engageObj.data.group[batch_tweet_ids[k]]);
+          engageObj.data.group[batch_tweet_ids[k]].id = batch_tweet_ids[k];
+          tweet_engage_list.push(engageObj.data.group[batch_tweet_ids[k]]);
+        }
+        bq_svcs.insertEngagements(tweet_engage_list);
+      })
+      .catch(console.log);
+    if (i === (quotient - 1))
+      pointer = mod + pointer
+    else
+      pointer = pointer + 250;
+    await utils.sleep(500);
+  }
+
+}
 
 router.get("/poll/:frequency/:delay", function (req, res) {
   console.log('polling Tweets from PubSub ', req.params.frequency);

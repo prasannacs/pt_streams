@@ -1,7 +1,8 @@
 const { BigQuery } = require("@google-cloud/bigquery");
 const config = require('../config.js');
+const utils = require('./utils.js');
 
-async function insertRowsAsStream(rows) {
+async function insertRowsAsStream(rows, tableName) {
   const bigqueryClient = new BigQuery();
 
   // Insert data into a table
@@ -9,10 +10,10 @@ async function insertRowsAsStream(rows) {
     const result = await new Promise((resolve, reject) => {
       bigqueryClient
         .dataset(config.pt_datasetId)
-        .table(config.pt_table)
+        .table(tableName)
         .insert(rows)
         .then((results) => {
-          console.log(config.app_name, ` Inserted ${rows.length} rows`);
+          console.log(config.app_name, '-- table -- ',tableName, ` Inserted ${rows.length} rows`);
           resolve(rows);
         })
         .catch((err) => {
@@ -52,9 +53,9 @@ async function insertResults(results, category) {
         }
       } else if (tweet.quoted_status) {
         tweet_type = 'Quote'
-      } 
-      
-      if( tweet_type === null || tweet_type === undefined ) {
+      }
+
+      if (tweet_type === null || tweet_type === undefined) {
         tweet_type = 'Original'
       }
 
@@ -80,11 +81,11 @@ async function insertResults(results, category) {
       }
 
       // Determine Media
-      if( tweet.media != undefined) {
+      if (tweet.media != undefined) {
         var media = tweet.media;
         var mediaArr = getMediaArray(media);
       }
-      if( tweet.extended_entities != undefined) {
+      if (tweet.extended_entities != undefined) {
         var e_media = tweet.extended_entities.media;
         var e_mediaArr = getMediaArray(e_media);
         var extended_entities = {};
@@ -101,7 +102,7 @@ async function insertResults(results, category) {
         tweety.id = tweet.id_str
         tweety.text = tweet.text
         tweety.category = category
-        tweety.reply_settings =  tweet.reply_settings
+        tweety.reply_settings = tweet.reply_settings
         tweety.source = tweet.source
         tweety.author_id = tweet.author_id
         tweety.conversation_id = tweet.conversation_id
@@ -115,9 +116,9 @@ async function insertResults(results, category) {
         tweety.user = tweet.user
         tweety.tweet_url = 'http://twitter.com/twitter/status/' + tweet.id_str
         tweety.tweet_type = tweet_type
-        if( tweet.media != undefined || tweet.media != null)
+        if (tweet.media != undefined || tweet.media != null)
           tweety.media = mediaArr
-        if( tweet.extended_entities != undefined || tweet.extended_entities != null)
+        if (tweet.extended_entities != undefined || tweet.extended_entities != null)
           tweety.extended_entities = extended_entities
         //console.log('====== pushed tweet id ',tweet.id, 'type ', tweet_type);
         resultRows.push(tweety);
@@ -125,7 +126,7 @@ async function insertResults(results, category) {
     }
   });
   if (resultRows.length > 0)
-    insertRowsAsStream(resultRows);
+    insertRowsAsStream(resultRows, config.pt_table);
 }
 
 function getMediaArray(media) {
@@ -144,4 +145,26 @@ function getMediaArray(media) {
   return mediaArr;
 }
 
-module.exports = { insertResults };
+async function queryRecentTweetsforEngagement() {
+  const bigqueryClient = new BigQuery();
+  let tableName = config.pt_datasetId + '.' + config.pt_table;
+  console.log('queryBQTable SQL ', utils.getEngagementSQL(tableName));
+  const options = {
+    query: utils.getEngagementSQL(tableName),
+    location: 'US',
+  };
+
+  const [rows] = await bigqueryClient.query(options);
+  console.log('Query Results: ', rows.length);
+  return rows;
+}
+
+async function insertEngagements(results)  {
+  results.forEach(function (engage, index) {
+    engage.created_at = BigQuery.datetime(new Date().toISOString());
+  })
+  if( results.length > 0 )
+    insertRowsAsStream(results,config.engagement_table);
+}
+
+module.exports = { insertResults, queryRecentTweetsforEngagement, insertEngagements };
