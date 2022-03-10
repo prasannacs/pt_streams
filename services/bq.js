@@ -13,7 +13,7 @@ async function insertRowsAsStream(rows, tableName) {
         .table(tableName)
         .insert(rows)
         .then((results) => {
-          console.log(config.app_name, '-- table -- ',tableName, ` Inserted ${rows.length} rows`);
+          console.log(config.app_name, '-- table -- ', tableName, ` Inserted ${rows.length} rows`);
           resolve(rows);
         })
         .catch((err) => {
@@ -71,10 +71,14 @@ async function insertResults(results, category) {
         else
           entitiesVar.urls = [];
         // TODO: ^^ correct it
-        if (tweet.entities.user_mentions === undefined)
-          entitiesVar.user_mentions = [];
-        if (tweet.entities.hashtags === undefined)
-          entitiesVar.hashtags = [];
+        if (tweet.entities.user_mentions.length == 0) {
+          tweet.entities.user_mentions = entitiesVar.user_mentions;
+          entitiesVar.user_mentions.push({ 'id': 0, 'id_str': '0', 'name': 'NA', 'screen_name': 'NA', 'indices': [0] })
+        }
+        if (tweet.entities.hashtags.length == 0) {
+          entitiesVar.hashtags = tweet.entities.hashtags;
+          entitiesVar.hashtags.push({ 'text': 'NA', 'indices': [0] })
+        }
         if (tweet.entities.media === undefined)
           entitiesVar.media = [];
         entitiesVar.media = [];
@@ -94,6 +98,12 @@ async function insertResults(results, category) {
 
       if (tweet.user != undefined) {
         tweet.user.user_url = 'http://twitter.com/' + tweet.user.screen_name
+        if (tweet.user.derived === undefined) {
+          tweet.user.derived = { 'locations': [] }
+          tweet.user.derived.locations.push({ 'country': 'NA', 'country_code': 'NA' })
+        } if(tweet.user.derived.locations.geo != undefined)  {
+          tweet.user.derived.locations.geo = {};
+        }
       }
 
       if (tweet.created_at != undefined) {
@@ -159,12 +169,12 @@ async function queryRecentTweetsforEngagement() {
   return rows;
 }
 
-async function insertEngagements(results)  {
+async function insertEngagements(results) {
   results.forEach(function (engage, index) {
     engage.created_at = BigQuery.datetime(new Date().toISOString());
   })
-  if( results.length > 0 )
-    insertRowsAsStream(results,config.engagement_table);
+  if (results.length > 0)
+    insertRowsAsStream(results, config.engagement_table);
 }
 
 module.exports = { insertResults, queryRecentTweetsforEngagement, insertEngagements };
