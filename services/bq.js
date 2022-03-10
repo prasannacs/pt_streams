@@ -98,12 +98,12 @@ async function insertResults(results, category) {
 
       if (tweet.user != undefined) {
         tweet.user.user_url = 'http://twitter.com/' + tweet.user.screen_name
-        if (tweet.user.derived === undefined) {
-          tweet.user.derived = { 'locations': [] }
-          tweet.user.derived.locations.push({ 'country': 'NA', 'country_code': 'NA' })
-        } if(tweet.user.derived.locations.geo != undefined)  {
-          tweet.user.derived.locations.geo = {};
-        }
+        // if (tweet.user.derived === undefined) {
+        //   tweet.user.derived = { 'locations': [] }
+        //   tweet.user.derived.locations.push({ 'country': 'NA', 'country_code': 'NA' })
+        // } if(tweet.user.derived.locations.geo != undefined)  {
+        //   tweet.user.derived.locations.geo = {};
+        // }
       }
 
       if (tweet.created_at != undefined) {
