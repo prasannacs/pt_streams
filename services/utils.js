@@ -6,10 +6,10 @@ function sleep(milliseconds) {
     })
 }
 
-function getEngagementSQL(tableName) {
+function getEngagementSQL(tableName, minMinutes, maxMinutes) {
     return `SELECT id  
-    FROM `+ tableName + ` WHERE DATETIME_DIFF(current_datetime, created_at, MINUTE) > 60 
-    AND DATETIME_DIFF(current_datetime, created_at, MINUTE) < 1440 AND TWEET_TYPE != 'Retweet'`;
+    FROM `+ tableName + ` WHERE DATETIME_DIFF(current_datetime, created_at, MINUTE) > `+ minMinutes + 
+    ` AND DATETIME_DIFF(current_datetime, created_at, MINUTE) < ` + maxMinutes + ` AND TWEET_TYPE != 'Retweet'`;
 }
 
 module.exports = { sleep, getEngagementSQL };

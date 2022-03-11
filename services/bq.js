@@ -158,9 +158,9 @@ function getMediaArray(media) {
 async function queryRecentTweetsforEngagement() {
   const bigqueryClient = new BigQuery();
   let tableName = config.pt_datasetId + '.' + config.pt_table;
-  console.log('queryBQTable SQL ', utils.getEngagementSQL(tableName));
+  console.log('queryBQTable SQL ', utils.getEngagementSQL(tableName, config.engagement_api.minMinutes, config.engagement_api.maxMinutes));
   const options = {
-    query: utils.getEngagementSQL(tableName),
+    query: utils.getEngagementSQL(tableName, config.engagement_api.minMinutes, config.engagement_api.maxMinutes),
     location: 'US',
   };
 

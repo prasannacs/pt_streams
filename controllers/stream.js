@@ -85,7 +85,7 @@ async function updateEngagementMetrics(tweets) {
       pointer = mod + pointer
     else
       pointer = pointer + 250;
-    await utils.sleep(500);
+    await utils.sleep(config.engagement_api.delay);
   }
 
 }
