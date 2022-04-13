@@ -9,7 +9,7 @@ async function insertRowsAsStream(rows, tableName) {
   try {
     const result = await new Promise((resolve, reject) => {
       bigqueryClient
-        .dataset(config.pt_datasetId)
+        .dataset(config.gcp_infra.bq.dataSetId)
         .table(tableName)
         .insert(rows)
         .then((results) => {
@@ -136,7 +136,7 @@ async function insertResults(results, category) {
     }
   });
   if (resultRows.length > 0)
-    insertRowsAsStream(resultRows, config.pt_table);
+    insertRowsAsStream(resultRows, config.gcp_infra.bq.table.tweets);
 }
 
 function getMediaArray(media) {
@@ -157,7 +157,7 @@ function getMediaArray(media) {
 
 async function queryRecentTweetsforEngagement() {
   const bigqueryClient = new BigQuery();
-  let tableName = config.pt_datasetId + '.' + config.pt_table;
+  let tableName = config.gcp_infra.bq.dataSetId + '.' + config.gcp_infra.bq.table.tweets;
   console.log('queryBQTable SQL ', utils.getEngagementSQL(tableName, config.engagement_api.minMinutes, config.engagement_api.maxMinutes));
   const options = {
     query: utils.getEngagementSQL(tableName, config.engagement_api.minMinutes, config.engagement_api.maxMinutes),
@@ -174,7 +174,7 @@ async function insertEngagements(results) {
     engage.created_at = BigQuery.datetime(new Date().toISOString());
   })
   if (results.length > 0)
-    insertRowsAsStream(results, config.engagement_table);
+    insertRowsAsStream(results, config.gcp_infra.bq.table.engagement);
 }
 
 module.exports = { insertResults, queryRecentTweetsforEngagement, insertEngagements };

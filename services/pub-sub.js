@@ -78,7 +78,7 @@ async function synchronousPull(projectId, subscriptionName, maxMessagesToPull) {
   console.log(config.app_name,' Tweets pulled -- ',tweets.length);
   if( tweets.length == 0 )
     counter++;
-  if( counter > config.reconnectCounter )  {
+  if( counter > config.gcp_infra.streamReconnectCounter )  {
     counter = 0;
     return new Promise(function (resolve, reject) {
       resolve('disconnect')
@@ -100,4 +100,3 @@ async function synchronousPull(projectId, subscriptionName, maxMessagesToPull) {
 }
 
 module.exports = { publishMessage, listenForMessages, synchronousPull };
-

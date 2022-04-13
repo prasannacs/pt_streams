@@ -6,6 +6,7 @@ const axiosRetry = require("axios-retry");
 const pub_sub_svcs = require('.././services/pub-sub.js');
 const utils = require('.././services/utils.js');
 const bq_svcs = require('.././services/bq.js');
+const gcp_infra_svcs = require('.././services/gcp-infra.js');
 
 const config = require('../config.js');
 const https = require('https');
@@ -22,8 +23,29 @@ axiosRetry(axios, {
 });
 
 router.get("/", function (req, res) {
-  streamTweetsHttp();
-  res.send("Now streaming tweets ..");
+  gcp_infra_svcs.provisionDataSet().then(function (status) {
+    if (status != null && status.includes('Successfully provisioned')) {
+      gcp_infra_svcs.provisionTables().then(function (status) {
+        if (status != null && status.includes('Successfully provisioned')) {
+          gcp_infra_svcs.setupMsgInfra().then(function (statusMsg)    {
+              if (statusMsg != null && statusMsg.includes(config.gcp_infra.topicName)) {
+                streamTweetsHttp();
+              }        
+          })
+        }
+      })
+        res.send("Now streaming tweets with new GCP infra ..");
+    }
+
+}).catch(error => {
+    streamTweetsHttp();
+    res.send("Now streaming tweets with existing GCP infra ..");
+})
+});
+
+router.get("/clean", function (req, res) {
+  gcp_infra_svcs.cleanUp();
+  res.send('GCP resources deleted');
 });
 
 router.get("/alive", function (req, res) {
@@ -41,7 +63,7 @@ router.get("/engagement", function (req, res) {
 
 async function updateEngagementMetrics(tweets) {
   let axiosConfig = {
-    headers: { Authorization: config.twitter_bearer_token, 'Content-Type': 'application/json', 'Accept-Encoding': 'gzip' }
+    headers: { Authorization: config.power_track_api.bearer_token, 'Content-Type': 'application/json', 'Accept-Encoding': 'gzip' }
   };
   let tweet_ids = [];
   let quotient = Math.floor(tweets.length / 250)
@@ -58,7 +80,7 @@ async function updateEngagementMetrics(tweets) {
       'groupings': { 'group': { 'group_by': ['tweet.id', 'engagement.type'] } }
     };
     axios.post(
-      'https://data-api.twitter.com/insights/engagement/totals',
+      config.engagement_api.totals_endpoint,
       bodyParameters,
       axiosConfig
     )
@@ -94,7 +116,7 @@ router.get("/poll/:frequency/:delay", function (req, res) {
   console.log('polling Tweets from PubSub ', req.params.frequency);
   for (var i = 0; i < req.params.frequency; i++) {
     setTimeout(() => {
-      pub_sub_svcs.synchronousPull(config.gcp_projectId, config.gcp_subscriptionName, config.messageCount).then((messenger) => {
+      pub_sub_svcs.synchronousPull(config.gcp_infra.projectId, config.gcp_infra.subscriptionName, config.gcp_infra.messageCount).then((messenger) => {
 
         if (messenger === 'disconnect') {
           console.log('Stream reconnecting => ', messenger);
@@ -110,12 +132,12 @@ router.get("/poll/:frequency/:delay", function (req, res) {
 async function streamTweetsHttp() {
 
   var options = {
-    host: config.pt_stream_host,
+    host: config.power_track_api.pt_stream_host,
     port: 443,
-    path: config.pt_stream_path,
+    path: config.power_track_api.pt_stream_path,
     keepAlive: true,
     headers: {
-      'Authorization': 'Basic ' + new Buffer(config.gnip_username + ':' + config.gnip_password).toString('base64')
+      'Authorization': 'Basic ' + new Buffer(config.power_track_api.gnip_username + ':' + config.power_track_api.gnip_password).toString('base64')
     }
   };
   request = https.get(options, function (res) {
@@ -129,7 +151,7 @@ async function streamTweetsHttp() {
       if (json_payload) {
         try {
           JSON.parse(json_payload);
-          pub_sub_svcs.publishMessage(config.gcp_topicName, JSON.stringify(json_payload));
+          pub_sub_svcs.publishMessage(config.gcp_infra.topicName, JSON.stringify(json_payload));
         } catch (e) {
           //console.log('Error -- ',e.message);
           if (json_payload[0] === undefined || json_payload[0] === '\r' || json_payload[0] === '' || json_payload[0] === '\n') {
