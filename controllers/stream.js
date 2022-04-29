@@ -43,6 +43,11 @@ router.get("/", function (req, res) {
 })
 });
 
+router.get("/connect", function (req, res) {
+  streamTweetsHttp();
+  res.send('Connecting to stream');
+});
+
 router.get("/clean", function (req, res) {
   gcp_infra_svcs.cleanUp();
   res.send('GCP resources deleted');
