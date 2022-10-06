@@ -18,11 +18,11 @@ router.get("/trends", function (req, res) {
         if(results) {
             results[0].forEach(function (annotation, index)    {
                 //console.log('Annotation ',annotation.ENTITY);
-                if( map.get(annotation.ENTITY_TYPE) === undefined )  {
-                    map.set(annotation.ENTITY_TYPE, 1);
+                if( map.get(annotation.ENTITY) === undefined )  {
+                    map.set(annotation.ENTITY, 1);
                 } else{
-                    var tweetCount = map.get(annotation.ENTITY_TYPE);
-                    map.set(annotation.ENTITY_TYPE, tweetCount+1)
+                    var tweetCount = map.get(annotation.ENTITY);
+                    map.set(annotation.ENTITY, tweetCount+1)
                 }
                 
             });
