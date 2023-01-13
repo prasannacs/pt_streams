@@ -436,6 +436,12 @@
                 "mode": "NULLABLE"
             },
             {
+                "name": "verified_type",
+                "type": "STRING",
+                "mode": "NULLABLE"
+            },
+
+            {
                 "name": "followers_count",
                 "type": "INTEGER",
                 "mode": "NULLABLE"
